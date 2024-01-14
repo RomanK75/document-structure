@@ -67,7 +67,7 @@ for (const prod of allProducts) {
             deleteButton.addEventListener("click", function (event) {
                 event.preventDefault();
                 newCartElement.remove();
-                if(!cartProduct) {
+                if(!cartProduct && !cartList.children.length > 0) {
                     cart.style.display = "none"
                 }
             });
@@ -85,7 +85,7 @@ for (const prod of allProducts) {
                 cartProductCount.textContent = Number(cartProductCount.textContent) - 1;
                 if (cartProductCount.textContent === "0") {
                     newCartElement.remove();
-                    if(!cartProduct) {
+                    if(!cartProduct && !cartList.children.length > 0) {
                         cart.style.display = "none"
                     }
                 }

@@ -1,56 +1,65 @@
 const form = document.getElementById("tasks__form")
 const inputfield = document.getElementById("task__input")
 const taskList = document.getElementById("tasks__list")
-const myStorage = window.localStorage
 const clearButton = document.getElementById("clear_storage")
 
-/* Вопрос????? Как генерировать уникальные ключи,
-    Кроме как инкрементировать ничего в голову не пришло поэтому не стал делать
-    т.е создавать id при remove брать оттуда ключ, но как потом код поймет что ключ освободился?
-*/
+console.log(localStorage)
+
+let nextId = 0;
 
 
-const myTaskList = myStorage
-console.log(myTaskList)
+function createTaskDiv(inputValue) {
+    const id = nextId++;
+    const task = {
+        id: id,
+        title: inputValue
+    };
 
-// Функция добавления таски
-function createTaskDiv(inputValue = "") {
-    const task = document.createElement("div")
-    task.className = "task"
-    task.innerHTML = `<div class="task__title">
-                            </div>
-        <a href="#" class="task__remove">&times;</a>`;
-    task.getElementsByClassName("task__title")[0].textContent = inputValue
-    const removeButton = task.getElementsByClassName("task__remove")[0]
-    removeButton.addEventListener("click", function() {
-        task.remove()
-        myStorage.removeItem(inputValue)
-    })
-    taskList.appendChild(task)
-    inputfield.value = ""
-    return task
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || {};
+    tasks[id] = task;
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+
+    const taskHTML = document.createElement("div");
+    taskHTML.className = "task";
+    taskHTML.innerHTML = `
+    <div class="task__title">
+      ${inputValue}
+    </div>
+    <a href="#" class="task__remove">&times;</a>
+  `;
+
+    const removeButton = taskHTML.querySelector(".task__remove");
+    removeButton.addEventListener("click", function () {
+        delete tasks[id];
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        taskHTML.remove();
+    });
+
+    taskList.appendChild(taskHTML);
+    inputfield.value = "";
+
+    return taskHTML;
 }
-// Очистка localstorage
-clearButton.addEventListener("click", function() {
-    myStorage.clear()
-})
-//  Добавляем таски из localstorage
-if (myStorage.length) {
-    for (task in myStorage) {
-        if (!myStorage.hasOwnProperty(task)) {
-            continue
-          }
-        createTaskDiv(myStorage.getItem(task))
-    }
+
+
+
+function renderTasks() {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || {};
+    Object.values(tasks).forEach(task => {
+        createTaskDiv(task.title);
+    });
 }
 
-// добавляем таску через кнопку
-form.addEventListener("submit", function(event) {
-    event.preventDefault()
-    const inputValue = inputfield.value
-    if (inputValue){
-        createTaskDiv(inputValue)
-        myStorage.setItem(inputValue, inputValue)
-    }
 
+
+clearButton.addEventListener("click", function () {
+    localStorage.removeItem('tasks');
 })
+
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    createTaskDiv(inputfield.value);
+})
+
+renderTasks()
